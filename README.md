@@ -38,11 +38,7 @@ npm run dev                   # http://localhost:5173
 
 ## Default admin
 
-| Email | Password |
-| --- | --- |
-| `admin@outcomedesk.in` | `ChangeMe@2026` |
-
-These come from `ADMIN_EMAIL` and `ADMIN_PASSWORD` at the time you seed. Set your own before seeding anything public.
+Admin credentials are configured via `ADMIN_EMAIL` and `ADMIN_PASSWORD` in your `server/.env` file before running the seed script. Always set your own strong credentials before deploying or running in production.
 
 ## Environment variables
 
