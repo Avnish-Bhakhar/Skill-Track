@@ -14,8 +14,8 @@ async function main() {
     firstName: () => faker.person.firstName(),
     lastName: () => faker.person.lastName(),
   });
-  const email = (process.env.ADMIN_EMAIL || "admin@outcomedesk.in").toLowerCase();
-  const password = process.env.ADMIN_PASSWORD || "ChangeMe@2026";
+  const email = (process.env.ADMIN_EMAIL || "admin@example.com").toLowerCase();
+  const password = process.env.ADMIN_PASSWORD || "admin123";
   const passwordHash = await bcrypt.hash(password, 10);
 
   await prisma.$transaction([

@@ -148,7 +148,7 @@ export default function Landing() {
                         className={`field ${fieldErrors.email ? "border-pink" : ""}`}
                         type="email"
                         autoComplete="username"
-                        placeholder="admin@outcomedesk.in"
+                        placeholder="officer@skilltrack.in"
                         required
                         value={form.email}
                         onChange={change("email")}
@@ -234,7 +234,7 @@ export default function Landing() {
                           className="field"
                           type="email"
                           autoComplete="email"
-                          placeholder="admin@outcomedesk.in"
+                          placeholder="officer@skilltrack.in"
                           required
                           value={forgotEmail}
                           onChange={(e) => setForgotEmail(e.target.value)}
