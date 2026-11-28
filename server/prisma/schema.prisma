@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum JobStatus {
+  EMPLOYED
+  NOT_EMPLOYED
+  SELF_EMPLOYED
+}
+
+enum UnmappedStatus {
+  OPEN
+  RESOLVED
+  IGNORED
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Skill {
+  id       String         @id
+  name     String         @unique
+  aliases  String[]
+  category String
+  sector   String
+  programs ProgramSkill[]
+  learners LearnerSkill[]
+  postings JobPostingSkill[]
+  recommendations Recommendation[]
+}
+
+model Program {
+  id             String         @id @default(cuid())
+  name           String         @unique
+  sector         String
+  durationMonths Int            @default(3)
+  skills         ProgramSkill[]
+  learners       Learner[]
+}
+
+model ProgramSkill {
+  programId String
+  skillId   String
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  skill     Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([programId, skillId])
+}
+
+model Learner {
+  id          String         @id @default(cuid())
+  name        String
+  phone       String         @unique
+  programId   String
+  district    String
+  batch       String
+  enrolledAt  DateTime
+  priorSalary Int?
+  createdAt   DateTime       @default(now())
+  program     Program        @relation(fields: [programId], references: [id], onDelete: Cascade)
+  skills      LearnerSkill[]
+  links       CheckInLink[]
+  outcome     Outcome?
+
+  @@index([district])
+  @@index([programId])
+}
+
+model LearnerSkill {
+  learnerId String
+  skillId   String
+  verified  Boolean @default(false)
+  learner   Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  skill     Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([learnerId, skillId])
+}
+
+model JobPosting {
+  id          String            @id @default(cuid())
+  title       String
+  district    String
+  sector      String?
+  description String
+  postedAt    DateTime
+  dedupeKey   String            @unique
+  skills      JobPostingSkill[]
+
+  @@index([district, sector])
+}
+
+model JobPostingSkill {
+  postingId String
+  skillId   String
+  posting   JobPosting @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  skill     Skill      @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([postingId, skillId])
+}
+
+model CheckInLink {
+  token     String    @id
+  learnerId String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  learner   Learner   @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@index([learnerId])
+}
+
+model Outcome {
+  id            String    @id @default(cuid())
+  learnerId     String    @unique
+  status        JobStatus
+  employer      String?
+  role          String?
+  salaryBand    String?
+  salaryMonthly Int?
+  startMonth    DateTime?
+  verified      Boolean   @default(false)
+  verifiedAt    DateTime?
+  submittedAt   DateTime  @default(now())
+  learner       Learner   @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+}
+
+model ComparisonMember {
+  id            String    @id @default(cuid())
+  name          String
+  district      String
+  referenceDate DateTime
+  priorSalary   Int?
+  employed      Boolean
+  salary        Int?
+  firstJobDate  DateTime?
+}
+
+model UnmappedSkill {
+  id              String         @id @default(cuid())
+  term            String
+  normalized      String         @unique
+  count           Int            @default(1)
+  status          UnmappedStatus @default(OPEN)
+  resolvedSkillId String?
+  postingIds      String[]
+  programIds      String[]
+  learnerIds      String[]
+  createdAt       DateTime       @default(now())
+}
+
+model Recommendation {
+  id         String   @id @default(cuid())
+  scope      String
+  skillId    String
+  module     String
+  assessment String
+  inputs     Json
+  createdAt  DateTime @default(now())
+  skill      Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([scope, skillId])
+}
+
+enum CurriculumRecStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  UNDER_REVIEW
+}
+
+model CurriculumRecommendation {
+  id               String                @id @default(cuid())
+  scope            String
+  skillId          String
+  skillName        String
+  category         String
+  priority         Float
+  demandPct        Float
+  supplyPct        Float
+  curriculumCoverage String             // "covered" | "missing" | "partial"
+  reason           String
+  learningOutcome  String
+  practicalExercise String
+  modulePosition   String
+  status           CurriculumRecStatus   @default(PENDING)
+  statusNote       String?
+  updatedAt        DateTime              @updatedAt
+  createdAt        DateTime              @default(now())
+
+  @@unique([scope, skillId])
+  @@index([scope, status])
+}
